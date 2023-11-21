@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: copr-database
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      component: copr-database
+  template:
+    metadata:
+      labels:
+        component: copr-database
+    spec:
+      nodeSelector:
+        usage: test
+        os.architecture: amd64
+      containers:
+        - image: pkking/copr_database@sha256:54af68a2402acb19c19bdf406f05e6a9fd64befabdc4dd23b720656daf2575e6
+          imagePullPolicy: IfNotPresent
+          name: copr-postgres
+          livenessProbe:
+            tcpSocket:
+              port: 5432
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 500m
+              memory: 500Mi
+          ports:
+            - containerPort: 5432
+              protocol: TCP
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  key: database-user
+                  name: copr-secrets
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: database-password
+                  name: copr-secrets
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  key: database-name
+                  name: copr-secrets
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgresql-data
+            - mountPath: /docker-entrypoint-initdb.d/0-inituser.sql
+              name: copr-secrets
+              subPath: database_inituser.sql
+            - mountPath: /docker-entrypoint-initdb.d/1-initdb.sh
+              name: copr-database
+              subPath: initdb.sh
+      volumes:
+        - name: postgresql-data
+          persistentVolumeClaim:
+            claimName: copr-database-data
+        - name: copr-database
+          configMap:
+            name: copr-database
+        - name: copr-secrets
+          secret:
+            secretName: copr-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: database
+spec:
+  ports:
+    - name: postgresql
+      port: 5432
+      protocol: TCP
+      targetPort: 5432
+  selector:
+    component: copr-database
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: copr-database-data
+  labels:
+    failure-domain.beta.kubernetes.io/zone: cn-north-4a
+  annotations:
+    everest.io/disk-volume-type: SSD
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi

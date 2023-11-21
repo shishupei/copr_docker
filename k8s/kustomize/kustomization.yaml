@@ -1,0 +1,58 @@
+resources:
+- namespace.yaml
+- database.yaml
+- redis.yaml
+- frontend.yaml
+- keygen.yaml
+- distgit.yaml
+- resalloc.yaml
+- backend.yaml
+- ingress.yaml
+- secrets.yaml
+commonLabels:
+  app: copr
+configMapGenerator:
+- files:
+  - initdb.sh=config/database/initdb.sh
+  name: copr-database
+- files:
+  - httpd.conf=config/frontend/httpd.conf
+  name: copr-frontend
+- files:
+  - copr-keygen.conf=config/keygen/copr-keygen.conf
+  name: copr-keygen
+- files:
+  - pools.yaml=config/resalloc/pools.yaml
+  - builder_config=config/backend/.ssh/builder_config
+  - local-new-aarch64=config/resalloc/local-new-aarch64
+  - local-new-x86=config/resalloc/local-new-x86
+  name: copr-resalloc
+- files:
+  - builder_config=config/backend/.ssh/builder_config
+  name: copr-backend
+namespace: fedora-copr
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# database image
+# redis image
+# resalloc image
+# distgit image
+# keygen image
+# frontend image
+# builder image
+# backend image
+images:
+- digest: sha256:957c96d41992da590421bcc6ed235e79959b3d183c838874cdf6e8965355263c
+  name: pkking/copr_backend
+- digest: sha256:11edf222578399b5642ecbb3c5a86918f1060b12f5f5d27c8c2d51e2eead3db9
+  name: pkking/copr_backend_httpd
+- digest: sha256:418c95402b5b74adedb55868b5520be9beb7ad74fda83018ca159de0bbc0f1b7
+  name: pkking/copr_database
+- digest: sha256:7e7cf5ba2fcbaab03496c9988ea9b81244136d0424ce4787157d3a50547064ac
+  name: pkking/copr_distgit
+- digest: sha256:c70ebd586f4f694c6d0e311195e536d5b15e51094f3b8082cab433f663d83205
+  name: pkking/copr_frontend
+- digest: sha256:e7e0d7d016e7087893c67db07f25c6e918d426e4688fc6cb21311e1e0221975e
+  name: pkking/copr_keygen-signd
+- digest: sha256:561e33c0b8d88d8cc9c5c1044789db15ec9781955ec41ec2a540d54c9deada3e
+  name: pkking/copr_resalloc

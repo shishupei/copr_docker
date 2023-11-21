@@ -1,0 +1,177 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: copr-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: copr-frontend
+  template:
+    metadata:
+      labels:
+        component: copr-frontend
+    spec:
+      nodeSelector:
+        usage: test
+        os.architecture: amd64
+      initContainers:
+        - name: init-frontend-database
+          image: ebiqe/alpine-nc:latest
+          command: [ "sh", "-c", "until nc -z database.fedora-copr.svc.cluster.local 5432; do echo waiting for database service ; sleep 2; done;" ]
+        - name: init-frontend-redis
+          image: ebiqe/alpine-nc:latest
+          command: [ "sh", "-c", "until nc -z redis.fedora-copr.svc.cluster.local 6379; do echo waiting for redis service ; sleep 2; done;" ]
+      containers:
+        - image: pkking/copr_frontend@sha256:df318fc7c93e6832a146b29b4a4664732efcfda5461a576c65bca89d53d56527
+          imagePullPolicy: IfNotPresent
+          name: copr-frontend-httpd
+          livenessProbe:
+            tcpSocket:
+              port: 5000
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 5
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 500m
+              memory: 500Mi
+          ports:
+            - containerPort: 5000
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /etc/copr/copr.conf
+              name: copr-secrets
+              subPath: frontend_copr.conf
+            - mountPath: /etc/httpd/conf.d/copr.conf
+              name: copr-frontend
+              subPath: httpd.conf
+            - mountPath: /usr/share/copr/data
+              name: copr-frontend-search-data
+      volumes:
+        - name: copr-frontend
+          configMap:
+            name: copr-frontend
+        - name: copr-secrets
+          secret:
+            secretName: copr-secrets
+        - name: copr-frontend-search-data
+          persistentVolumeClaim:
+            claimName: copr-frontend-search-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: copr-frontend
+spec:
+  ports:
+    - name: httpd
+      port: 5000
+      protocol: TCP
+      targetPort: 5000
+  selector:
+    component: copr-frontend
+  type: ClusterIP
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: frontend-cronjob-hourly
+spec:
+  schedule: "0 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          affinity:
+            podAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+              - labelSelector:
+                  matchExpressions:
+                  - key: component
+                    operator: In
+                    values:
+                    - copr-frontend
+                topologyKey: kubernetes.io/hostname
+          containers:
+          - image: pkking/copr_frontend@sha256:df318fc7c93e6832a146b29b4a4664732efcfda5461a576c65bca89d53d56527
+            name: frontend-cronjob
+            command:
+            - /bin/sh
+            - -c
+            - sudo /etc/cron.hourly/copr-frontend; sudo /etc/cron.hourly/copr-frontend-optional
+            volumeMounts:
+            - mountPath: /usr/share/copr/data
+              name: copr-frontend-search-data
+            - mountPath: /etc/copr/copr.conf
+              name: copr-secrets
+              subPath: frontend_copr.conf
+          volumes:
+            - name: copr-frontend-search-data
+              persistentVolumeClaim:
+                claimName: copr-frontend-search-data
+            - name: copr-secrets
+              secret:
+                secretName: copr-secrets
+          restartPolicy: OnFailure
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: frontend-cronjob-daily
+spec:
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          affinity:
+            podAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+              - labelSelector:
+                  matchExpressions:
+                  - key: component
+                    operator: In
+                    values:
+                    - copr-frontend
+                topologyKey: kubernetes.io/hostname
+          containers:
+          - image: pkking/copr_frontend@sha256:df318fc7c93e6832a146b29b4a4664732efcfda5461a576c65bca89d53d56527
+            name: frontend-cronjob
+            command:
+            - /bin/sh
+            - -c
+            - sudo /etc/cron.daily/copr-frontend; sudo /etc/cron.daily/copr-frontend-optional
+            volumeMounts:
+            - mountPath: /usr/share/copr/data
+              name: copr-frontend-search-data
+            - mountPath: /etc/copr/copr.conf
+              name: copr-secrets
+              subPath: frontend_copr.conf
+          volumes:
+            - name: copr-frontend-search-data
+              persistentVolumeClaim:
+                claimName: copr-frontend-search-data
+            - name: copr-secrets
+              secret:
+                secretName: copr-secrets
+          restartPolicy: OnFailure
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: copr-frontend-search-data
+  labels:
+    failure-domain.beta.kubernetes.io/zone: cn-north-4a
+spec:
+  storageClassName: csi-nas
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi

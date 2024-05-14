@@ -1,5 +1,6 @@
 FROM openeuler/openeuler:22.03 AS base
 
+
 RUN dnf -y update && dnf -y in git gcc openssl-devel protobuf-c-devel
 # prepare rust toolchain
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |sh -s -- -y --default-toolchain nightly -c rust-std -c rust-src
@@ -89,6 +90,12 @@ RUN patch /usr/lib/python3.9/site-packages/copr_backend/helpers.py < /helpers.pa
     patch /usr/lib/python3.9/site-packages/copr_backend/background_worker_build.py < /background_worker_build.patch && \
     cd /usr/lib/python3.9/site-packages/copr_backend/ && patch -p3 < /support_signatrust_backend.patch && \
     cd /usr/bin/ && patch -p3 < /signatrust_bin.patch
+
+ARG USER
+ARG PASS
+RUN echo "machine github.com login $USER password $PASS" >/root/.netrc
+RUN go env -w GOPRIVATE=github.com/opensourceways
+
 
 USER copr
 RUN ln -sf /proc/1/fd/1 /var/log/copr-backend/action_dispatcher.log && \

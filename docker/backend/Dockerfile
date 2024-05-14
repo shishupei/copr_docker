@@ -3,7 +3,6 @@ FROM openeuler/openeuler:22.03 AS base
 ARG USER
 ARG PASS
 RUN echo "machine github.com login $USER password $PASS" >/root/.netrc
-RUN rustup install 1.74
 #RUN ENV PIP_EXTRA_INDEX_URL=github.com/opensourceways/copr_design/
 
 RUN dnf -y update && dnf -y in git gcc openssl-devel protobuf-c-devel

@@ -1,5 +1,10 @@
 FROM openeuler/openeuler:22.03 AS base
 
+ARG USER
+ARG PASS
+RUN echo "machine github.com login $USER password $PASS" >/root/.netrc
+RUN go env -w GOPRIVATE=github.com/opensourceways/copr_design
+
 RUN dnf -y update && dnf -y in git gcc openssl-devel protobuf-c-devel
 # prepare rust toolchain
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |sh -s -- -y --default-toolchain nightly -c rust-std -c rust-src
@@ -17,10 +22,6 @@ COPY --from=base /usr/local/bin/client /usr/local/bin/client
 ENV TERM=linux \
     LANG=en_US.UTF-8
 
-ARG USER
-ARG PASS
-RUN echo "machine github.com login $USER password $PASS" >/root/.netrc
-RUN go env -w GOPRIVATE=github.com/opensourceways/copr_design
 # download EUR repo
 RUN curl -o /etc/yum.repos.d/eur.repo -L https://eur.openeuler.openatom.cn/coprs/mywaaagh_admin/eur/repo/openeuler-22.03_LTS_SP1/mywaaagh_admin-eur-openeuler-22.03_LTS_SP1.repo
 

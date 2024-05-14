@@ -17,6 +17,10 @@ COPY --from=base /usr/local/bin/client /usr/local/bin/client
 ENV TERM=linux \
     LANG=en_US.UTF-8
 
+ARG USER
+ARG PASS
+RUN echo "machine github.com login $USER password $PASS" >/root/.netrc
+RUN go env -w GOPRIVATE=github.com/opensourceways/copr_design
 # download EUR repo
 RUN curl -o /etc/yum.repos.d/eur.repo -L https://eur.openeuler.openatom.cn/coprs/mywaaagh_admin/eur/repo/openeuler-22.03_LTS_SP1/mywaaagh_admin-eur-openeuler-22.03_LTS_SP1.repo
 
@@ -90,10 +94,6 @@ RUN patch /usr/lib/python3.9/site-packages/copr_backend/helpers.py < /helpers.pa
     cd /usr/lib/python3.9/site-packages/copr_backend/ && patch -p3 < /support_signatrust_backend.patch && \
     cd /usr/bin/ && patch -p3 < /signatrust_bin.patch
 
-ARG USER
-ARG PASS
-RUN echo "machine github.com login $USER password $PASS" >/root/.netrc
-RUN go env -w GOPRIVATE=github.com/opensourceways
 
 
 USER copr

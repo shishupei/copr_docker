@@ -1,14 +1,10 @@
-FROM openeuler/openeuler:22.03 AS base
 
-ARG USER
-ARG PASS
-RUN echo "machine github.com login $USER password $PASS" >/root/.netrc
-#RUN ENV PIP_EXTRA_INDEX_URL=github.com/opensourceways/copr_design/
+FROM openeuler/openeuler:22.03 AS base
 
 RUN dnf -y update && dnf -y in git gcc openssl-devel protobuf-c-devel
 # prepare rust toolchain
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |sh -s -- -y --default-toolchain nightly -c rust-std -c rust-src
-#RUN git clone -b v1.0.0-rc.1 https://gitee.com/openeuler/signatrust.git && source $HOME/.cargo/env && cd signatrust && cargo build --bin client --release && install -m 755 target/release/client /usr/local/bin/
+RUN git clone -b v1.0.0-rc.1 https://gitee.com/openeuler/signatrust.git && source $HOME/.cargo/env && cd signatrust && cargo build --bin client --release && install -m 755 target/release/client /usr/local/bin/
 
 FROM openeuler/openeuler:22.03 AS backend
 LABEL maintainer="infra@openeuler.org"
@@ -16,7 +12,7 @@ LABEL maintainer="infra@openeuler.org"
 ENV export LANG=en_US.UTF-8
 ENV PYTHONPATH="/usr/share/copr/"
 
-#COPY --from=base /usr/local/bin/client /usr/local/bin/client
+COPY --from=base /usr/local/bin/client /usr/local/bin/client
 
 # TERM is to make the tito work in container, rhbz#1733043
 ENV TERM=linux \
@@ -91,11 +87,8 @@ RUN chown copr:copr /var/lock/copr-backend /var/log/copr-backend
 RUN patch /usr/lib/python3.9/site-packages/copr_backend/helpers.py < /helpers.patch && \
     patch /usr/bin/print_queues.py < /print_queues.py && \
     patch /usr/lib/python3.9/site-packages/copr_common/redis_helpers.py < /redis_helpers.patch && \
-    patch /usr/lib/python3.9/site-packages/copr_backend/background_worker_build.py < /background_worker_build.patch && \
     cd /usr/lib/python3.9/site-packages/copr_backend/ && patch -p3 < /support_signatrust_backend.patch && \
     cd /usr/bin/ && patch -p3 < /signatrust_bin.patch
-
-
 
 USER copr
 RUN ln -sf /proc/1/fd/1 /var/log/copr-backend/action_dispatcher.log && \

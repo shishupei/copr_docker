@@ -18,7 +18,7 @@ ENV PYTHONPATH="/usr/share/copr/"
 ENV TERM=linux \
     LANG=en_US.UTF-8
 
-RUN dnf update rpm && dnf update
+RUN yum/dnf install packagemame --nogpgcheck
 
 # download EUR repo
 RUN curl -o /etc/yum.repos.d/eur.repo -L https://eur.openeuler.openatom.cn/coprs/mywaaagh_admin/eur/repo/openeuler-22.03_LTS_SP1/mywaaagh_admin-eur-openeuler-22.03_LTS_SP1.repo

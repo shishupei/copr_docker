@@ -1,10 +1,9 @@
-
 FROM openeuler/openeuler:22.03 AS base
 
 RUN dnf -y update && dnf -y in git gcc openssl-devel protobuf-c-devel
 # prepare rust toolchain
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |sh -s -- -y --default-toolchain nightly -c rust-std -c rust-src
-RUN git clone -b master https://gitee.com/openeuler/signatrust.git && source $HOME/.cargo/env && cd signatrust && cargo build --bin client --release && install -m 755 target/release/client /usr/local/bin/
+RUN git clone https://gitee.com/openeuler/signatrust.git && source $HOME/.cargo/env && cd signatrust && cargo build --bin client --release && install -m 755 target/release/client /usr/local/bin/
 
 FROM openeuler/openeuler:22.03 AS backend
 LABEL maintainer="infra@openeuler.org"
@@ -17,8 +16,6 @@ COPY --from=base /usr/local/bin/client /usr/local/bin/client
 # TERM is to make the tito work in container, rhbz#1733043
 ENV TERM=linux \
     LANG=en_US.UTF-8
-
-RUN dnf update rpm && dnf update
 
 # download EUR repo
 RUN curl -o /etc/yum.repos.d/eur.repo -L https://eur.openeuler.openatom.cn/coprs/mywaaagh_admin/eur/repo/openeuler-22.03_LTS_SP1/mywaaagh_admin-eur-openeuler-22.03_LTS_SP1.repo

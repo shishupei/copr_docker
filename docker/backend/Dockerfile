@@ -12,7 +12,7 @@ LABEL maintainer="infra@openeuler.org"
 ENV export LANG=en_US.UTF-8
 ENV PYTHONPATH="/usr/share/copr/"
 
-COPY --from=base /usr/local/bin/client /usr/local/bin/client
+#COPY --from=base /usr/local/bin/client /usr/local/bin/client
 
 # TERM is to make the tito work in container, rhbz#1733043
 ENV TERM=linux \

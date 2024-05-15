@@ -22,8 +22,6 @@ ENV TERM=linux \
 # download EUR repo
 RUN curl -o /etc/yum.repos.d/eur.repo -L https://eur.openeuler.openatom.cn/coprs/mywaaagh_admin/eur/repo/openeuler-22.03_LTS_SP1/mywaaagh_admin-eur-openeuler-22.03_LTS_SP1.repo
 
-RUN yum/dnf install packagemame --nogpgcheck
-
 # base packages
 RUN set -ex ; dnf -y install dnf-plugins-core && dnf -y update && \
     dnf -y install htop \

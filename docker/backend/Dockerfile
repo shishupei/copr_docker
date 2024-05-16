@@ -86,7 +86,7 @@ RUN chown copr:copr /var/lock/copr-backend /var/log/copr-backend
 
 RUN patch /usr/lib/python3.9/site-packages/copr_backend/helpers.py < /helpers.patch && \
     patch /usr/lib/python3.9/site-packages/copr_backend/background_worker_build.py < /background_worker_build.patch && \
-    patch /usr/bin/euler_msgbus.py < /euler_msgbus.py && \
+    patch /usr/lib/python3.9/site-packages/copr_backend/euler_msgbus.py < /euler_msgbus.patch && \
     patch /usr/bin/print_queues.py < /print_queues.py && \
     patch /usr/lib/python3.9/site-packages/copr_common/redis_helpers.py < /redis_helpers.patch && \
     cd /usr/lib/python3.9/site-packages/copr_backend/ && patch -p3 < /support_signatrust_backend.patch && \

@@ -79,13 +79,13 @@ RUN chmod 0755 /usr/bin/sign
 RUN chown copr:root /etc/sign.conf && \
     chmod 0660 /etc/sign.conf
 
+
 # Not sure why the directory wasn't created automatically
 RUN mkdir /var/lock/copr-backend
 RUN chown copr:copr /var/lock/copr-backend /var/log/copr-backend
 
 RUN patch /usr/lib/python3.9/site-packages/copr_backend/helpers.py < /helpers.patch
 RUN cd /usr/lib/python3.9/site-packages/copr_backend/ && patch -p3 < /euler_msgbus.patch
-#RUN patch /usr/lib/python3.9/site-packages/copr_backend/background_worker_build.py < /background_worker_build.patch
 RUN patch /usr/bin/print_queues.py < /print_queues.py
 RUN patch /usr/lib/python3.9/site-packages/copr_common/redis_helpers.py < /redis_helpers.patch
 RUN cd /usr/lib/python3.9/site-packages/copr_backend/ && patch -p3 < /support_signatrust_backend.patch
@@ -104,5 +104,5 @@ RUN ln -sf /proc/1/fd/1 /var/log/copr-backend/action_dispatcher.log && \
               ln -sf /proc/1/fd/1 /var/log/copr-backend/terminator.log && \
               ln -sf /proc/1/fd/1 /var/log/copr-backend/vmm.log && \
               ln -sf /proc/1/fd/1 /var/log/copr-backend/worker.log
-ENTRYPOINT ["/usr/bin/tini", "--"]
+#ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["/run-backend"]

@@ -74,6 +74,7 @@ RUN chmod 700 /root && \
 # container scenario it is not desired.  We use the downstream-only option
 # allow-unprivileged-ports option: https://github.com/openSUSE/obs-sign/pull/36
 RUN chmod 0755 /usr/bin/sign
+RUN chmod 0755 /run-backend
 
 # entrypoint needs to have write access here (group=0)
 RUN chown copr:root /etc/sign.conf && \
@@ -104,5 +105,5 @@ RUN ln -sf /proc/1/fd/1 /var/log/copr-backend/action_dispatcher.log && \
               ln -sf /proc/1/fd/1 /var/log/copr-backend/terminator.log && \
               ln -sf /proc/1/fd/1 /var/log/copr-backend/vmm.log && \
               ln -sf /proc/1/fd/1 /var/log/copr-backend/worker.log
-#ENTRYPOINT ["/usr/bin/tini", "--"]
+ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["/run-backend"]

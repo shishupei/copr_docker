@@ -3,7 +3,7 @@ new file mode 100644
 index 000000000..1f523e827
 --- /dev/null
 +++ b/backend/copr_backend/euler_msgbus.py
-@@ -0,0 +1,61 @@
+@@ -0,0 +1,59 @@
 +import os
 +
 +try:
@@ -60,10 +60,8 @@ index 000000000..1f523e827
 +        from kafka import KafkaProducer
 +        producer = KafkaProducer(
 +            bootstrap_servers=["182.160.6.195:9094"],
-+             value_serializer=lambda v: json.dumps(v).encode()
 +        )
-+        data = {'msg': 'hello kafka!'}
-+        producer.send("test_message_center", data)
++        producer.send("test_message_center", b'Hello, Kafka!')
 +        producer.flush()
 
 

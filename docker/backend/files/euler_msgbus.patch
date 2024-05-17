@@ -61,7 +61,7 @@ index 000000000..1f523e827
 +        producer = KafkaProducer(
 +            bootstrap_servers=["182.160.6.195:9094"]
 +        )
-+        producer.send("test_message_center", msg)
++        producer.send("test_message_center", "1111111")
 +        producer.flush()
 
 

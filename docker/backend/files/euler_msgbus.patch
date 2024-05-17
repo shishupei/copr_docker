@@ -49,7 +49,7 @@ index 000000000..1f523e827
 +    return message
 +
 +
-+class EulerMessageSender:
++class MessageSender:
 +    def __init__(self, name, log):
 +        self.log = log
 +        self.name = name

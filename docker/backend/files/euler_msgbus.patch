@@ -3,7 +3,7 @@ new file mode 100644
 index 000000000..1f523e827
 --- /dev/null
 +++ b/backend/copr_backend/euler_msgbus.py
-@@ -0,0 +1,60 @@
+@@ -0,0 +1,59 @@
 +import os
 +
 +try:
@@ -30,7 +30,6 @@ index 000000000..1f523e827
 +        'build.start': {
 +            'what': "build start: user:{user} copr:{copr}" \
 +                    " pkg:{pkg} build:{build} ip:{ip} pid:{pid}",
-+            'class': schema.BuildChrootStartedV1,
 +        },
 +        'chroot.start': {
 +            'what': "chroot start: chroot:{chroot} user:{user}" \

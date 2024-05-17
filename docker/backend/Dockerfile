@@ -39,15 +39,12 @@ RUN set -ex ; dnf -y install dnf-plugins-core && dnf -y update && \
                    findutils \
                    tini \
                    patch \
-                   pip \
 # to get more entropy for generation of gpg keys
                    rng-tools \
 # for unbuffer package
                    expect \
     && dnf -y install copr-backend-1.168 \
     && dnf clean all && rm -rf /var/cache/dnf
-
-RUN pip install copr-messaging
 
 # needed to be able to ping
 RUN setcap cap_net_raw,cap_net_admin+p /usr/bin/ping

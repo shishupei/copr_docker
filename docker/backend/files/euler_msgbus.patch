@@ -25,28 +25,7 @@ index 000000000..1f523e827
 +        'status': job.status,
 +    }
 +    content.update({'ip': ip, 'who': who, 'pid': pid})
-+
-+    message_types = {
-+        'build.start': {
-+            'what': "build start: user:{user} copr:{copr}" \
-+                    " pkg:{pkg} build:{build} ip:{ip} pid:{pid}",
-+            'class': schema.BuildChrootStartedV1,
-+        },
-+        'chroot.start': {
-+            'what': "chroot start: chroot:{chroot} user:{user}" \
-+                    " copr:{copr} pkg:{pkg} build:{build} ip:{ip} pid:{pid}",
-+            'class': schema.BuildChrootStartedV1DontUse,
-+        },
-+        'build.end': {
-+            'what': "build end: user:{user} copr:{copr} build:{build}" \
-+                    " pkg:{pkg} version:{version} ip:{ip} pid:{pid} status:{status}",
-+            'class': schema.BuildChrootEndedV1,
-+        },
-+    }
-+
-+    content['what'] = message_types[topic]['what'].format(**content)
-+    message = message_types[topic]['class'](body=content)
-+    return message
++    return content
 +
 +
 +class MessageSender:

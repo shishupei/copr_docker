@@ -39,6 +39,7 @@ RUN set -ex ; dnf -y install dnf-plugins-core && dnf -y update && \
                    findutils \
                    tini \
                    patch \
+                   python3-copr-messaging \
 # to get more entropy for generation of gpg keys
                    rng-tools \
 # for unbuffer package

@@ -3,7 +3,7 @@ new file mode 100644
 index 000000000..1f523e827
 --- /dev/null
 +++ b/backend/copr_backend/euler_msgbus.py
-@@ -0,0 +1,63 @@
+@@ -0,0 +1,59 @@
 +import os
 +
 +try:
@@ -30,27 +30,23 @@ index 000000000..1f523e827
 +        'build.start': {
 +            'what': "build start: user:{user} copr:{copr}" \
 +                    " pkg:{pkg} build:{build} ip:{ip} pid:{pid}",
-+            'class': schema.BuildChrootStartedV1,
 +        },
 +        'chroot.start': {
 +            'what': "chroot start: chroot:{chroot} user:{user}" \
 +                    " copr:{copr} pkg:{pkg} build:{build} ip:{ip} pid:{pid}",
-+            'class': schema.BuildChrootStartedV1DontUse,
 +        },
 +        'build.end': {
 +            'what': "build end: user:{user} copr:{copr} build:{build}" \
 +                    " pkg:{pkg} version:{version} ip:{ip} pid:{pid} status:{status}",
-+            'class': schema.BuildChrootEndedV1,
 +        },
 +    }
 +
 +    content['what'] = message_types[topic]['what'].format(**content)
-+    message = message_types[topic]['class'](body=content)
 +    return content
 +
 +
-+class EulerMessageSender:
-+    def __init__(self, name, log):
++class MessageSender:
++    def __init__(self, backend_opts, name, log):
 +        self.log = log
 +        self.name = name
 +        self.pid = os.getpid()
@@ -63,7 +59,18 @@ index 000000000..1f523e827
 +        """ Send message to kafka """
 +        from kafka import KafkaProducer
 +        producer = KafkaProducer(
-+            bootstrap_servers=["182.160.6.195:9094"]
++            bootstrap_servers=["182.160.6.195:9094"],
 +        )
-+        producer.send("test_message_center", msg)
++        producer.send("test_message_center", b'Hello, Kafka!')
 +        producer.flush()
+
+
++.. warning::
++   Don't remove projects, packages, builds, etc while paginating over them. It
++   may result in skipping some results. Instead, query all objects (using
++   pagination) first, and then delete them.
++
++
+ Pagination parameters
+ ---------------------
+

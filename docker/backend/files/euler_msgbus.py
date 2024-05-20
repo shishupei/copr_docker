@@ -1,11 +1,11 @@
 from copr_backend.helpers import BackendConfigReader
-import os
-
+from kafka import KafkaProducer
 try:
     from copr_messaging import schema
 except ImportError:
     # copr_messaging is optional
     schema = None
+import os
 
 
 def message_from_worker_job(topic, job, who, ip, pid):
@@ -56,11 +56,10 @@ class EulerMessageSender:
 
     def send_message(self, msg):
         """ Send message to kafka """
-        from kafka import KafkaProducer
         config_file = os.environ.get("EULER_MESSAGE_CONFIG", "/etc/copr/msgbus-euler.conf")
         opts = BackendConfigReader(config_file).read()
         producer = KafkaProducer(
             bootstrap_servers=opts.bootstrap_servers
         )
-        producer.send("test_message_center", msg)
+        producer.send("test_message_center", msg.__str__().encode("utf-8"))
         producer.flush()

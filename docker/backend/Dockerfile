@@ -1,6 +1,6 @@
 FROM openeuler/openeuler:22.03 AS base
 
-RUN dnf -y update && dnf -y in git gcc openssl-devel protobuf-c-devel make
+RUN dnf -y in git gcc openssl-devel protobuf-c-devel make
 # prepare rust toolchain
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |sh -s -- -y --default-toolchain nightly -c rust-std -c rust-src
 RUN git clone https://gitee.com/openeuler/signatrust.git && source $HOME/.cargo/env && cd signatrust && cargo build --bin client --release && install -m 755 target/release/client /usr/local/bin/

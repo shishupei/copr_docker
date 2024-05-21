@@ -1,10 +1,6 @@
 from copr_backend.helpers import BackendConfigReader
 from kafka import KafkaProducer
-try:
-    from copr_messaging import schema
-except ImportError:
-    # copr_messaging is optional
-    schema = None
+from copr_backend import euler_schema as schema
 import os
 
 

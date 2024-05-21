@@ -3,7 +3,7 @@ new file mode 100644
 index 000000000..1f523e827
 --- /dev/null	2024-05-21 11:37:56.000000000 +0800
 +++ b/euler_msgbus.py	2024-05-21 11:34:08.000000000 +0800
-@@ -0,0 +1,64 @@
+@@ -0,0 +1,62 @@
 +from kafka import KafkaProducer
 +import os
 +import datetime
@@ -37,7 +37,7 @@ index 000000000..1f523e827
 +    }
 +    content['what'] = message_types[topic]['what'].format(**content)
 +    message['body'] = content
-+    now = datetime.now()
++    now = datetime.datetime.now()
 +    headers = {
 +        "fedora_messaging_schema": topic,
 +        "sent-at": now,
@@ -60,8 +60,6 @@ index 000000000..1f523e827
 +
 +    def send_message(self, msg):
 +        """ Send message to kafka """
-+        config_file = os.environ.get("EULER_MESSAGE_CONFIG", "/etc/copr/msgbus-euler.conf")
-+        opts = BackendConfigReader(config_file).read()
 +        producer = KafkaProducer(
 +            bootstrap_servers=["182.160.6.195:9092"],
 +            value_serializer=lambda v: json.dumps(v).encode('utf-8')

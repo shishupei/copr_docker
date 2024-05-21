@@ -37,9 +37,9 @@ index 000000000..1f523e827
 +    }
 +    content['what'] = message_types[topic]['what'].format(**content)
 +    message['body'] = content
-+    now = datetime.datetime.now()
++    now = datetime.datetime.now().isoformat()
 +    headers = {
-+        "fedora_messaging_schema": topic,
++        "openEuler_messaging_schema": topic,
 +        "sent-at": now,
 +    }
 +    message['headers'] = headers

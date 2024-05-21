@@ -32,7 +32,7 @@ def message_from_worker_job(topic, job, who, ip, pid):
     }
     content['what'] = message_types[topic]['what'].format(**content)
     message['body'] = content
-    now = datetime.datetime.utcnow().replace(microsecond=0, tzinfo=pytz.utc)
+    now = datetime.datetime.now()
     headers = {
         "fedora_messaging_schema": topic,
         "sent-at": now.isoformat(),

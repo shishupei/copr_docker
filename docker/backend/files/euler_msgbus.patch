@@ -61,7 +61,7 @@ index 000000000..1f523e827
 +    def send_message(self, msg):
 +        """ Send message to kafka """
 +        producer = KafkaProducer(
-+            bootstrap_servers=["182.160.6.195:9092"],
++            bootstrap_servers=["182.160.6.195:9094"],
 +            value_serializer=lambda v: json.dumps(v).encode('utf-8')
 +        )
 +        producer.send("test_message_center", msg)

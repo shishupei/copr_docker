@@ -3,8 +3,9 @@ new file mode 100644
 index 000000000..1f523e827
 --- /dev/null
 +++ b/backend/copr_backend/euler_msgbus.py
-@@ -0,0 +1,60 @@
+@@ -0,0 +1,61 @@
 +import os
++import json
 +
 +try:
 +    from copr_messaging import schema

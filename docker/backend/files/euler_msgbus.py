@@ -24,22 +24,24 @@ def message_from_worker_job(topic, job, who, ip, pid):
         'build.start': {
             'what': "build start: user:{user} copr:{copr}" \
                     " pkg:{pkg} build:{build} ip:{ip} pid:{pid}",
+            'topic': "eur.build.start",
         },
         'build.end': {
             'what': "build end: user:{user} copr:{copr} build:{build}" \
                     " pkg:{pkg} version:{version} ip:{ip} pid:{pid} status:{status}",
+            'topic': "eur.build.end",
         },
     }
     content['what'] = message_types[topic]['what'].format(**content)
     message['body'] = content
     now = datetime.datetime.now()
     headers = {
-        "fedora_messaging_schema": topic,
+        "fedora_messaging_schema": message_types[topic]['topic'],
         "sent-at": now.isoformat(),
     }
     message['headers'] = headers
     message['id'] = str(uuid.uuid4())
-    message['topic'] = topic
+    message['topic'] = message_types[topic]['topic']
     return message
 
 

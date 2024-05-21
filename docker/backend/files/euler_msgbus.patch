@@ -49,7 +49,7 @@ index 000000000..1f523e827
 +
 +
 +class MessageSender:
-+    def __init__(self, name, log):
++    def __init__(self, backend_opts, name, log):
 +        self.log = log
 +        self.name = name
 +        self.pid = os.getpid()

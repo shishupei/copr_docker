@@ -1,20 +1,18 @@
 diff --git a/backend/copr_backend/euler_msgbus.py b/backend/copr_backend/euler_msgbus.py
 new file mode 100644
-index 000000000..1f523e827
+index 000000000..7a639ff59
 --- /dev/null
 +++ b/backend/copr_backend/euler_msgbus.py
-@@ -0,0 +1,61 @@
+@@ -0,0 +1,63 @@
++from kafka import KafkaProducer
 +import os
++import datetime
++import uuid
 +import json
-+
-+try:
-+    from copr_messaging import schema
-+except ImportError:
-+    # copr_messaging is optional
-+    schema = None
 +
 +
 +def message_from_worker_job(topic, job, who, ip, pid):
++    message = {}
 +    content = {
 +        'user': job.submitter,
 +        'copr': job.project_name,
@@ -32,22 +30,26 @@ index 000000000..1f523e827
 +            'what': "build start: user:{user} copr:{copr}" \
 +                    " pkg:{pkg} build:{build} ip:{ip} pid:{pid}",
 +        },
-+        'chroot.start': {
-+            'what': "chroot start: chroot:{chroot} user:{user}" \
-+                    " copr:{copr} pkg:{pkg} build:{build} ip:{ip} pid:{pid}",
-+        },
 +        'build.end': {
 +            'what': "build end: user:{user} copr:{copr} build:{build}" \
 +                    " pkg:{pkg} version:{version} ip:{ip} pid:{pid} status:{status}",
 +        },
 +    }
-+
 +    content['what'] = message_types[topic]['what'].format(**content)
-+    return content
++    message['body'] = content
++    now = datetime.datetime.utcnow().replace(microsecond=0, tzinfo=pytz.utc)
++    headers = {
++        "fedora_messaging_schema": topic,
++        "sent-at": now.isoformat(),
++    }
++    message['headers'] = headers
++    message['id'] = str(uuid.uuid4())
++    message['topic'] = topic
++    return message
 +
 +
-+class MessageSender:
-+    def __init__(self, backend_opts, name, log):
++class EulerMessageSender:
++    def __init__(self, name, log):
 +        self.log = log
 +        self.name = name
 +        self.pid = os.getpid()
@@ -58,21 +60,10 @@ index 000000000..1f523e827
 +
 +    def send_message(self, msg):
 +        """ Send message to kafka """
-+        from kafka import KafkaProducer
++        config_file = os.environ.get("EULER_MESSAGE_CONFIG", "/etc/copr/msgbus-euler.conf")
 +        producer = KafkaProducer(
 +            bootstrap_servers=["182.160.6.195:9094"],
 +            value_serializer=lambda v: json.dumps(v).encode('utf-8')
 +        )
 +        producer.send("test_message_center", msg)
 +        producer.flush()
-
-
-+.. warning::
-+   Don't remove projects, packages, builds, etc while paginating over them. It
-+   may result in skipping some results. Instead, query all objects (using
-+   pagination) first, and then delete them.
-+
-+
- Pagination parameters
- ---------------------
-

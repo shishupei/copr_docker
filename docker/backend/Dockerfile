@@ -20,13 +20,11 @@ ENV TERM=linux \
 # download EUR repo
 RUN curl -o /etc/yum.repos.d/eur.repo -L https://eur.openeuler.openatom.cn/coprs/mywaaagh_admin/eur/repo/openeuler-22.03_LTS_SP1/mywaaagh_admin-eur-openeuler-22.03_LTS_SP1.repo
 
-
 # base packages
-RUN set -ex ; dnf -y install dnf-plugins-core && dnf -y update && \
-    dnf -y install htop \
 RUN set -ex ; dnf -y install dnf-plugins-core && dnf -y update
 RUN dnf -y install python3-pip
 RUN pip3 install kafka-python
+RUN pip3 install copr-messaging
 RUN dnf -y install htop \
                    make \
                    wget \
@@ -44,18 +42,14 @@ RUN dnf -y install htop \
                    findutils \
                    tini \
                    patch \
-# to get more entropy for generation of gpg keys
+# to get more entropy for generation of gpg keys dnf -y update
                    rng-tools \
 # for unbuffer package
                    expect \
     && dnf -y install copr-backend-1.168 \
     && dnf clean all && rm -rf /var/cache/dnf \
 
-# 安装pip
-RUN python -m ensurepip && \
-    python -m pip install --upgrade pip
 
-RUN pip install kafka-python
 
 
 # needed to be able to ping
@@ -119,4 +113,3 @@ RUN ln -sf /proc/1/fd/1 /var/log/copr-backend/action_dispatcher.log && \
               ln -sf /proc/1/fd/1 /var/log/copr-backend/worker.log
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["/run-backend"]
-

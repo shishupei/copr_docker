@@ -1,10 +1,13 @@
 from copr_backend.helpers import BackendConfigReader
 from kafka import KafkaProducer
-from copr_backend import euler_schema as schema
 import os
+import datetime
+import uuid
+import json
 
 
 def message_from_worker_job(topic, job, who, ip, pid):
+    message = {}
     content = {
         'user': job.submitter,
         'copr': job.project_name,
@@ -21,22 +24,22 @@ def message_from_worker_job(topic, job, who, ip, pid):
         'build.start': {
             'what': "build start: user:{user} copr:{copr}" \
                     " pkg:{pkg} build:{build} ip:{ip} pid:{pid}",
-            'class': schema.BuildChrootStartedV1,
-        },
-        'chroot.start': {
-            'what': "chroot start: chroot:{chroot} user:{user}" \
-                    " copr:{copr} pkg:{pkg} build:{build} ip:{ip} pid:{pid}",
-            'class': schema.BuildChrootStartedV1DontUse,
         },
         'build.end': {
             'what': "build end: user:{user} copr:{copr} build:{build}" \
                     " pkg:{pkg} version:{version} ip:{ip} pid:{pid} status:{status}",
-            'class': schema.BuildChrootEndedV1,
         },
     }
-
     content['what'] = message_types[topic]['what'].format(**content)
-    message = message_types[topic]['class'](body=content)
+    message['body'] = content
+    now = datetime.datetime.utcnow().replace(microsecond=0, tzinfo=pytz.utc)
+    headers = {
+        "fedora_messaging_schema": topic,
+        "sent-at": now.isoformat(),
+    }
+    message['headers'] = headers
+    message['id'] = str(uuid.uuid4())
+    message['topic'] = topic
     return message
 
 
@@ -55,7 +58,8 @@ class EulerMessageSender:
         config_file = os.environ.get("EULER_MESSAGE_CONFIG", "/etc/copr/msgbus-euler.conf")
         opts = BackendConfigReader(config_file).read()
         producer = KafkaProducer(
-            bootstrap_servers=opts.bootstrap_servers
+            bootstrap_servers=opts.bootstrap_servers,
+            value_serializer=lambda v: json.dumps(v).encode('utf-8')
         )
         producer.send("test_message_center", msg.__str__().encode("utf-8"))
         producer.flush()

@@ -61,5 +61,5 @@ class EulerMessageSender:
             bootstrap_servers=opts.bootstrap_servers,
             value_serializer=lambda v: json.dumps(v).encode('utf-8')
         )
-        producer.send("test_message_center", msg.__str__().encode("utf-8"))
+        producer.send("test_message_center", msg)
         producer.flush()

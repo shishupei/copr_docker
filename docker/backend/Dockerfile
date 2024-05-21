@@ -24,7 +24,6 @@ RUN curl -o /etc/yum.repos.d/eur.repo -L https://eur.openeuler.openatom.cn/coprs
 RUN set -ex ; dnf -y install dnf-plugins-core && dnf -y update
 RUN dnf -y install python3-pip
 RUN pip3 install kafka-python
-RUN pip3 install copr-messaging
 RUN dnf -y install htop \
                    make \
                    wget \
